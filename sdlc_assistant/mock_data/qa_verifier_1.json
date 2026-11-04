@@ -1,0 +1,54 @@
+[
+  {
+    "type": "uncovered_requirement",
+    "severity": "high",
+    "refs": [
+      "requirement",
+      "US-5"
+    ],
+    "detail": "In-scope item 'Manager can reject a pending request' has no story. US-5 covers approval only, so the rejection path (status change, employee notified, balance unchanged) is neither specified nor tested."
+  },
+  {
+    "type": "untested_criterion",
+    "severity": "high",
+    "refs": [
+      "US-4.AC1"
+    ],
+    "detail": "US-4.AC1 (manager notified) has no tests at all. No T-* references it."
+  },
+  {
+    "type": "untested_criterion",
+    "severity": "medium",
+    "refs": [
+      "US-1.AC1",
+      "T-1"
+    ],
+    "detail": "US-1.AC1 has only a positive test (T-1). Missing a negative case (balance service unavailable) and an edge case (zero balance)."
+  },
+  {
+    "type": "untested_criterion",
+    "severity": "medium",
+    "refs": [
+      "US-5.AC1",
+      "US-1.AC1"
+    ],
+    "detail": "Nothing verifies the hand-off between approval and balance: after US-5 approves a request, no test checks that US-1 shows the reduced balance or that US-3 then blocks an over-balance request."
+  },
+  {
+    "type": "untested_criterion",
+    "severity": "medium",
+    "refs": [
+      "US-5.AC1"
+    ],
+    "detail": "US-5.AC1 has no negative test (a manager approving a request outside their team) and no edge test (approving twice must not deduct the balance twice)."
+  },
+  {
+    "type": "inconsistency",
+    "severity": "low",
+    "refs": [
+      "US-1.AC1",
+      "requirement"
+    ],
+    "detail": "Open question 1 (do pending requests reduce the shown balance?) is unresolved, so US-1.AC1 and US-3.AC2 could be read two ways. Resolve before build."
+  }
+]

@@ -1,6 +1,6 @@
 # Design Document — Agentic SDLC Delivery Assistant
 
-**Status:** v1 reference design
+**Status:** v1 — implemented twice: a Python runner (`sdlc_assistant/`) and an importable n8n workflow (`n8n/workflow.json`). Both follow this document.
 **Scope:** upstream SDLC (requirements → stories → tests → verification). Code generation and deployment are explicitly out of scope.
 
 This document explains the *why* behind every design choice. It is written to be defensible in a design review: each decision states the alternative considered and the reason for the call.
@@ -39,14 +39,14 @@ Each agent has one responsibility, a defined input, a defined output, and an ass
 ### Agent 2 — Story Writer
 - **Job:** decompose the approved requirement into user stories, each with acceptance criteria.
 - **Input:** approved requirement.
-- **Output:** list of user stories in `As a / I want / so that` form, each with Gherkin `Given / When / Then` acceptance criteria.
+- **Output:** list of user stories in `As a / I want / so that` form, each with Gherkin `Given / When / Then` acceptance criteria. Every criterion gets its own id (`US-1.AC1`) so tests and gaps can point at it exactly.
 - **Model tier:** low. This is largely structured transformation once the requirement is clean.
 
 ### Agent 3 — Test Designer
 - **Job:** generate test cases for each acceptance criterion — happy path, negative cases, and edge cases.
 - **Input:** approved user stories.
-- **Output:** test cases, each linked to a specific acceptance criterion, tagged by type.
-- **Model tier:** low-to-mid. Edge-case generation benefits from a slightly stronger model.
+- **Output:** test cases, each linked to a specific acceptance criterion id, tagged by type.
+- **Model tier:** mid. Edge-case generation benefits from a stronger model than story formatting does.
 
 ### Agent 4 — QA Verifier
 - **Job:** the quality gate. Check two kinds of coverage: do the stories fully cover the requirement, and do the tests fully cover the acceptance criteria? Produce a gap report.
@@ -60,7 +60,12 @@ The pipeline is a **sequential chain with review gates and a conditional feedbac
 
 - Agents run in order 1 → 2 → 3 → 4.
 - After agents 1, 2, and 4 there is a **human-in-the-loop (HITL) gate**.
-- If the QA Verifier (agent 4) reports high-severity gaps, the orchestrator can **route back** to the Story Writer with the gap report attached, rather than surfacing broken output to the human. This is the one loop in the system, and it is bounded (max 2 iterations) to prevent runaway cost.
+- If the QA Verifier (agent 4) reports high-severity gaps, the orchestrator **routes back** with the gap report attached, rather than surfacing broken output to the human. Where it routes depends on the gap:
+  - a **scope** gap (`uncovered_requirement`, `scope_drift`, `inconsistency`) goes back to the **Story Writer**, and the revised stories pass through Gate 2 again, because a human approved the old ones;
+  - a gap that is only **thin tests** (`untested_criterion`) goes back to the **Test Designer**, since the approved stories are fine.
+
+  This is the one automatic loop in the system, and it is bounded (max 2 iterations) to prevent runaway cost. Gaps that survive the cap go to Gate 3, where the human sees them.
+- At Gates 1 and 2 the reviewer can **approve**, **revise** (write feedback — including answers to open questions — and the agent redrafts), **edit** the JSON directly (Python runner), or **reject**, which stops the run with nothing downstream produced.
 
 An **orchestrator** owns control flow: it invokes each agent, enforces the gates, carries the shared state object, and decides when to loop versus advance. It holds no domain logic of its own — a deliberate choice so that agent behavior stays inspectable and swappable.
 
@@ -79,7 +84,7 @@ The core cost lever. Rather than run the whole chain on one premium model, each 
 | --- | --- | --- | --- |
 | 1. Requirements Analyst | Ambiguity detection | **Mid** | Needs reasoning to spot gaps, but bounded scope |
 | 2. Story Writer | Structured transformation | **Low** | Mostly formatting once requirement is clean |
-| 3. Test Designer | Enumeration + edge cases | **Low–Mid** | Edge cases reward a bit more capability |
+| 3. Test Designer | Enumeration + edge cases | **Mid** | Edge cases reward a bit more capability |
 | 4. QA Verifier | Cross-artifact reasoning | **High** | Highest-judgment step; worth the premium |
 
 The insight: **spend model budget where judgment lives (verification) and economize where the task is structural (story formatting).** This keeps average cost-per-run low while protecting quality at the step that matters most. Tier names are model-agnostic on purpose — you plug in whatever low/mid/high models your platform offers.
@@ -91,14 +96,19 @@ Agents do not pass conversational messages to each other. They read from and wri
 ```json
 {
   "requirement": { "problem": "", "in_scope": [], "out_of_scope": [], "assumptions": [], "open_questions": [] },
-  "stories": [ { "id": "", "story": "", "acceptance_criteria": [] } ],
-  "tests": [ { "id": "", "criterion_id": "", "type": "positive|negative|edge", "case": "" } ],
-  "gap_report": [ { "type": "", "severity": "", "detail": "" } ],
+  "stories": [ { "id": "US-1", "story": "", "acceptance_criteria": [ { "id": "US-1.AC1", "criterion": "" } ] } ],
+  "tests": [ { "id": "T-1", "criterion_id": "US-1.AC1", "type": "positive|negative|edge", "case": "" } ],
+  "gap_report": [ { "type": "", "severity": "high|medium|low", "detail": "", "refs": [] } ],
+  "coverage": { "criteria": 0, "fully_covered": 0, "missing": {} },
   "approvals": { "gate1": false, "gate2": false, "gate3": false }
 }
 ```
 
 Passing typed state instead of chat history is what keeps context from drifting across four agents. Each agent sees exactly the fields it needs and nothing else.
+
+Every agent reply is parsed and checked against this shape before it enters the spec (required fields, allowed test types and severities, unique criterion ids). A malformed reply is retried once with the error attached; if it fails again, the run stops with a clear message rather than passing bad state downstream.
+
+`coverage` is computed mechanically after each QA pass: which criteria have positive, negative and edge tests. It can't judge test quality, but it can't miss a criterion either, so it backs up the QA Verifier rather than replacing it.
 
 ## 7. Failure modes and mitigations
 
@@ -111,7 +121,8 @@ Designing for failure is the senior part of this exercise. The main risks and ho
 | **Context drift** across the chain | Free-form handoffs accumulate noise | Typed Delivery Spec state (§6) |
 | **Cost blowup** | Premium model on every step + loops | Model routing (§5) + bounded feedback loop (max 2) |
 | **Over-automation** (human rubber-stamps) | Gates become theater | Verifier surfaces a *specific* gap list, so review is substantive, not vibes |
-| **Prompt injection** via requirement text | Untrusted input treated as instruction | Requirement text is handled as data, delimited in the prompt; agents are instructed to treat it as content to analyze, never as instructions |
+| **Malformed model output** | Models occasionally wrap or break JSON | Tolerant parsing, schema checks, one retry with the error, then a clear stop |
+| **Prompt injection** via requirement text | Untrusted input treated as instruction | Requirement text is handled as data, delimited in the prompt (triple quotes in the input are neutralized so it can't close the block); agents are instructed to treat it as content to analyze, never as instructions |
 
 ## 8. What "good" looks like (success criteria)
 

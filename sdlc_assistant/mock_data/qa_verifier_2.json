@@ -1,0 +1,20 @@
+[
+  {
+    "type": "inconsistency",
+    "severity": "medium",
+    "refs": [
+      "US-1.AC1",
+      "US-3.AC2",
+      "requirement"
+    ],
+    "detail": "Open question 1 is still unresolved: if pending requests don't reduce the balance, an employee could submit two requests that together exceed it. Add a rule (count pending days against the balance at submit time) or confirm the risk is acceptable."
+  },
+  {
+    "type": "untested_criterion",
+    "severity": "low",
+    "refs": [
+      "US-4.AC1"
+    ],
+    "detail": "US-4.AC1 says 'a notification' but the channel (in-app, email, both) is an open question; tests T-16 to T-18 will need updating once it's decided."
+  }
+]

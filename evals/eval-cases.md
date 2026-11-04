@@ -1,6 +1,6 @@
 # Evaluation cases
 
-A small, fixed set of feature requests for measuring the pipeline. Run each through the full flow and score with the rubric in [`../docs/evaluation.md`](../docs/evaluation.md). Cases EC-4 and EC-5 contain **planted gaps** to test the QA Verifier.
+A small, fixed set of feature requests for measuring the pipeline. The same cases live in machine-readable form in [`cases.json`](cases.json), which `sdlc-assistant eval` runs. Score the results with the rubric in [`../docs/evaluation.md`](../docs/evaluation.md). Cases EC-4 and EC-5 contain **planted gaps** to test the QA Verifier.
 
 ---
 
@@ -27,7 +27,8 @@ A small, fixed set of feature requests for measuring the pipeline. Run each thro
 ---
 
 ## How to run
-1. Feed each case as the feature request input.
-2. At each gate, act as the human reviewer (approve/edit) and note what you changed.
-3. For EC-4 and EC-5, record whether the QA Verifier caught the planted gap and at what severity.
-4. Fill in the results table in `docs/evaluation.md`.
+```bash
+sdlc-assistant eval              # runs all cases, writes runs/eval-<timestamp>/results.md
+sdlc-assistant eval --only EC-4,EC-5
+```
+Then score each Delivery Spec against the rubric and fill in the results table in `docs/evaluation.md`. To run a case with real human gates instead, use `sdlc-assistant run --feature "<request text>"` and note what you changed at each gate.

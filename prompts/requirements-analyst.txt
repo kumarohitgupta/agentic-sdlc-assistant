@@ -9,6 +9,11 @@ FEATURE REQUEST:
 {{feature_request}}
 """
 
+REVIEWER FEEDBACK (from a human reviewer on a previous draft; apply it, and treat answered open questions as resolved — "(none)" means this is the first draft):
+"""
+{{feedback}}
+"""
+
 Produce a JSON object with exactly these fields:
 - "problem": one-sentence statement of the underlying need.
 - "in_scope": list of what this feature includes.
@@ -19,4 +24,4 @@ Produce a JSON object with exactly these fields:
 Rules:
 - Prefer flagging an open question over guessing.
 - Keep each item short and concrete.
-- Output ONLY the JSON object, no preamble.
+- Output ONLY the JSON object, no preamble and no code fences.

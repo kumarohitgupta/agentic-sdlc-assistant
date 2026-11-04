@@ -1,0 +1,40 @@
+[
+  {
+    "id": "EC-1",
+    "title": "Password reset",
+    "request": "Users should be able to reset their password if they forget it. Send them an email with a link. The link should expire."
+  },
+  {
+    "id": "EC-2",
+    "title": "Export report to CSV",
+    "request": "Managers want to export the team's attendance report as a CSV so they can share it. They should be able to pick a date range."
+  },
+  {
+    "id": "EC-3",
+    "title": "In-app notifications",
+    "request": "When something needs a user's attention — an approval, a mention — show them a notification in the app. They should be able to mark it as read."
+  },
+  {
+    "id": "EC-4",
+    "title": "Bulk upload (planted gap)",
+    "request": "HR wants to upload new employees in bulk from a spreadsheet. Show them which rows succeeded and which failed.",
+    "planted_gap": {
+      "description": "What makes a row fail (validation rules) is implied but not stated.",
+      "keywords": ["validat", "required field", "invalid row", "duplicate", "malformed"]
+    }
+  },
+  {
+    "id": "EC-5",
+    "title": "Two-factor login (planted gap)",
+    "request": "Add optional two-factor authentication at login using an authenticator app. Users can turn it on in settings.",
+    "planted_gap": {
+      "description": "Recovery when the device is lost (recovery codes, lockout) is not mentioned.",
+      "keywords": ["recovery", "lost device", "lost phone", "backup code", "lockout", "locked out"]
+    }
+  },
+  {
+    "id": "EC-6",
+    "title": "Comment on a document",
+    "request": "Let users leave comments on a document and reply to each other. Comments should show who wrote them and when."
+  }
+]

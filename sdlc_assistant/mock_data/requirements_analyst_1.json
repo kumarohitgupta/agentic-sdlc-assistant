@@ -1,0 +1,34 @@
+{
+  "problem": "Employees need a self-service way to request vacation and get a manager decision, so time off is tracked against their balance and visible to the team.",
+  "in_scope": [
+    "Employee can view their remaining vacation balance",
+    "Employee can select a start and end date for a request",
+    "Employee can submit a time-off request",
+    "System checks the request against the remaining balance",
+    "Manager is notified when a request is submitted",
+    "Manager can approve a pending request",
+    "Manager can reject a pending request",
+    "Employee is told the outcome of their request",
+    "Approved time off appears on the team calendar"
+  ],
+  "out_of_scope": [
+    "Accrual rules and how balances are calculated",
+    "Leave types other than vacation (sick, parental, unpaid)",
+    "Editing or cancelling a request after submission",
+    "Multi-level or delegated approvals",
+    "Payroll integration"
+  ],
+  "assumptions": [
+    "Each employee has exactly one manager who approves their requests",
+    "Balances are counted in whole working days; weekends are not deducted",
+    "A balance service already exists and is the source of truth",
+    "Employees and managers are already authenticated users of the app"
+  ],
+  "open_questions": [
+    "Do pending (not yet approved) requests reduce the balance shown to the employee?",
+    "Is the manager notified in-app, by email, or both?",
+    "Must the manager give a reason when rejecting?",
+    "Are public holidays excluded from the day count, and from which holiday calendar?",
+    "Who can see the team calendar: only the team, or the wider company?"
+  ]
+}
