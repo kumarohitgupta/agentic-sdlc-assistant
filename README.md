@@ -88,6 +88,14 @@ Given a one-paragraph feature request, the pipeline outputs a **Delivery Spec** 
 
 See a complete example: [`examples/sample-output-delivery-spec.md`](examples/sample-output-delivery-spec.md). In that run the QA Verifier catches a missing manager-rejection story, the loop sends it back, and the second pass closes it.
 
+## Results so far
+
+First live evaluation (5 of 6 cases, [details](docs/evaluation.md#results)):
+
+- **Both planted gaps flagged** by the QA Verifier on its first pass. One was fixed automatically through the feedback loop. The other was out of scope, so it was flagged for a human instead.
+- **109 of 109** acceptance criteria ended with positive, negative and edge tests.
+- **$0.54 per feature** on average, **44% less** than the same run with Opus on every step.
+
 ## Architecture
 
 ```
