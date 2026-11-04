@@ -175,11 +175,22 @@ def run_agent(client: LLMClient, agent: str, model: str, **values: Any) -> tuple
         total_out += done.output_tokens
         seconds += done.seconds
         last_text = done.text
+        if done.stop_reason == "max_tokens":
+            # Truncated JSON never parses; say so plainly and ask for a tighter reply.
+            last_error = (f"the reply hit the {MAX_TOKENS[agent]:,}-token output limit and was cut off; "
+                          "keep each item shorter")
+            continue
         try:
             data = CHECKS[agent](extract_json(done.text))
             return data, AgentCall(agent, model, total_in, total_out, seconds, attempt)
         except (ValueError, json.JSONDecodeError) as err:
             last_error = str(err)
+    if "output limit" in last_error:
+        raise AgentOutputError(
+            f"{agent} ran out of output space twice ({MAX_TOKENS[agent]:,} tokens). The feature is probably "
+            f"too big for one pass: split it into smaller requests, or raise MAX_TOKENS['{agent}'] in "
+            "sdlc_assistant/config.py."
+        )
     raise AgentOutputError(
         f"{agent} returned output that isn't valid ({last_error}). First 500 chars:\n{last_text[:500]}"
     )

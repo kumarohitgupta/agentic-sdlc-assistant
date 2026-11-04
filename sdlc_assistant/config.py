@@ -33,11 +33,13 @@ PRICING = {
     "claude-opus-5-5": (4.00, 20.00),
 }
 
+# Output caps. Real runs on a 7-story feature used ~12k tokens for tests, so
+# leave headroom. Kept at or under 20k so the n8n workflow (non-streaming) works too.
 MAX_TOKENS = {
     "requirements_analyst": 4000,
-    "story_writer": 8000,
-    "test_designer": 16000,
-    "qa_verifier": 8000,
+    "story_writer": 12000,
+    "test_designer": 20000,
+    "qa_verifier": 16000,
 }
 
 

@@ -162,3 +162,24 @@ def test_cli_eval_mock(tmp_path, monkeypatch):
     cases = pathlib.Path(__file__).resolve().parent.parent / "evals" / "cases.json"
     assert main(["eval", "--mock", "--cases", str(cases), "--only", "EC-1", "--out", str(tmp_path)]) == 0
     assert list(tmp_path.glob("eval-*/results.md"))
+
+
+def test_truncated_reply_gives_a_clear_error():
+    class Cut:
+        def complete(self, agent, model, prompt, max_tokens):
+            return Completion('[{"id": "T-1", "crit', 1, max_tokens, 0.0, stop_reason="max_tokens")
+
+    with pytest.raises(agents.AgentOutputError, match="ran out of output space"):
+        agents.run_agent(Cut(), "test_designer", "m", stories=[], feedback="(none)")
+
+
+def test_truncation_then_success_recovers():
+    replies = iter([Completion("[", 1, 1, 0.0, stop_reason="max_tokens"),
+                    Completion('[{"id": "T-1", "criterion_id": "US-1.AC1", "type": "edge", "case": "c"}]', 1, 1, 0.0)])
+
+    class Flaky:
+        def complete(self, agent, model, prompt, max_tokens):
+            return next(replies)
+
+    data, call = agents.run_agent(Flaky(), "test_designer", "m", stories=[], feedback="(none)")
+    assert data[0]["id"] == "T-1" and call.attempts == 2

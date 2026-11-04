@@ -16,6 +16,7 @@ class Completion:
     input_tokens: int
     output_tokens: int
     seconds: float
+    stop_reason: str = "end_turn"
 
 
 class LLMClient(Protocol):
@@ -57,6 +58,7 @@ class AnthropicClient:
             input_tokens=message.usage.input_tokens,
             output_tokens=message.usage.output_tokens,
             seconds=time.monotonic() - start,
+            stop_reason=message.stop_reason or "end_turn",
         )
 
 
