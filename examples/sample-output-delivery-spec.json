@@ -1,0 +1,397 @@
+{
+  "feature_request": "Employees should be able to request time off. They pick the dates, see how many vacation days they have left, and submit the request. Their manager gets notified and can approve or reject it. Approved time off should show up on the team calendar.",
+  "status": "approved",
+  "requirement": {
+    "problem": "Employees need a self-service way to request vacation and get a manager decision, so time off is tracked against their balance and visible to the team.",
+    "in_scope": [
+      "Employee can view their remaining vacation balance",
+      "Employee can select a start and end date for a request",
+      "Employee can submit a time-off request",
+      "System checks the request against the remaining balance",
+      "Manager is notified when a request is submitted",
+      "Manager can approve a pending request",
+      "Manager can reject a pending request",
+      "Employee is told the outcome of their request",
+      "Approved time off appears on the team calendar"
+    ],
+    "out_of_scope": [
+      "Accrual rules and how balances are calculated",
+      "Leave types other than vacation (sick, parental, unpaid)",
+      "Editing or cancelling a request after submission",
+      "Multi-level or delegated approvals",
+      "Payroll integration"
+    ],
+    "assumptions": [
+      "Each employee has exactly one manager who approves their requests",
+      "Balances are counted in whole working days; weekends are not deducted",
+      "A balance service already exists and is the source of truth",
+      "Employees and managers are already authenticated users of the app"
+    ],
+    "open_questions": [
+      "Do pending (not yet approved) requests reduce the balance shown to the employee?",
+      "Is the manager notified in-app, by email, or both?",
+      "Must the manager give a reason when rejecting?",
+      "Are public holidays excluded from the day count, and from which holiday calendar?",
+      "Who can see the team calendar: only the team, or the wider company?"
+    ]
+  },
+  "stories": [
+    {
+      "id": "US-1",
+      "story": "As an employee, I want to see my remaining vacation balance, so that I know how much time off I can request.",
+      "acceptance_criteria": [
+        {
+          "id": "US-1.AC1",
+          "criterion": "Given I am logged in and have 12 vacation days remaining, When I open the time-off page, Then I see '12 days remaining'"
+        }
+      ]
+    },
+    {
+      "id": "US-2",
+      "story": "As an employee, I want to pick a start and end date, so that I can say exactly when I'll be away.",
+      "acceptance_criteria": [
+        {
+          "id": "US-2.AC1",
+          "criterion": "Given I am on the request form, When I choose an end date on or after the start date, Then the number of working days requested is shown"
+        },
+        {
+          "id": "US-2.AC2",
+          "criterion": "Given I am on the request form, When I choose an end date before the start date, Then I see an error and cannot submit"
+        }
+      ]
+    },
+    {
+      "id": "US-3",
+      "story": "As an employee, I want to submit my request, so that my manager can review it.",
+      "acceptance_criteria": [
+        {
+          "id": "US-3.AC1",
+          "criterion": "Given valid dates within my remaining balance, When I submit, Then a request is created with status 'Pending'"
+        },
+        {
+          "id": "US-3.AC2",
+          "criterion": "Given the requested working days exceed my remaining balance, When I submit, Then the submission is blocked with a message and no request is created"
+        }
+      ]
+    },
+    {
+      "id": "US-4",
+      "story": "As a manager, I want to be notified of a new request, so that I can review it promptly.",
+      "acceptance_criteria": [
+        {
+          "id": "US-4.AC1",
+          "criterion": "Given an employee on my team submits a request, When it is created, Then I receive a notification linking to the request"
+        }
+      ]
+    },
+    {
+      "id": "US-5",
+      "story": "As a manager, I want to approve a pending request, so that my team member can take the time off.",
+      "acceptance_criteria": [
+        {
+          "id": "US-5.AC1",
+          "criterion": "Given a pending request from my team, When I approve it, Then its status becomes 'Approved', the employee is notified, and their balance is reduced by the requested days"
+        }
+      ]
+    },
+    {
+      "id": "US-6",
+      "story": "As a manager, I want to reject a pending request, so that time off that doesn't work for the team isn't granted.",
+      "acceptance_criteria": [
+        {
+          "id": "US-6.AC1",
+          "criterion": "Given a pending request from my team, When I reject it with an optional reason, Then its status becomes 'Rejected', the employee is notified with the reason, and their balance is unchanged"
+        }
+      ]
+    },
+    {
+      "id": "US-7",
+      "story": "As a team member, I want approved time off on the team calendar, so that we can plan around absences.",
+      "acceptance_criteria": [
+        {
+          "id": "US-7.AC1",
+          "criterion": "Given a request is approved, When anyone on the team opens the team calendar, Then the employee is shown as away on each requested date, and pending or rejected requests are not shown"
+        }
+      ]
+    }
+  ],
+  "tests": [
+    {
+      "id": "T-1",
+      "criterion_id": "US-1.AC1",
+      "type": "positive",
+      "case": "Setup: employee with 12 days remaining. Action: open the time-off page. Expected: '12 days remaining' is shown."
+    },
+    {
+      "id": "T-2",
+      "criterion_id": "US-1.AC1",
+      "type": "negative",
+      "case": "Setup: the balance service is unavailable. Action: open the time-off page. Expected: a clear 'balance unavailable, try again' message, not a blank or zero balance; submit is disabled."
+    },
+    {
+      "id": "T-3",
+      "criterion_id": "US-1.AC1",
+      "type": "edge",
+      "case": "Setup: new employee with 0 days remaining. Action: open the time-off page. Expected: '0 days remaining' is shown, not a negative number or empty value."
+    },
+    {
+      "id": "T-4",
+      "criterion_id": "US-2.AC1",
+      "type": "positive",
+      "case": "Setup: request form. Action: choose Mon 2 Mar to Fri 6 Mar. Expected: '5 working days' is shown."
+    },
+    {
+      "id": "T-5",
+      "criterion_id": "US-2.AC1",
+      "type": "negative",
+      "case": "Setup: request form. Action: choose a range that starts in the past. Expected: an error says past dates can't be requested."
+    },
+    {
+      "id": "T-6",
+      "criterion_id": "US-2.AC1",
+      "type": "edge",
+      "case": "Setup: request form. Action: choose Fri 6 Mar to Mon 9 Mar (spans a weekend). Expected: '2 working days' is shown."
+    },
+    {
+      "id": "T-7",
+      "criterion_id": "US-2.AC2",
+      "type": "positive",
+      "case": "Setup: request form. Action: choose end date 1 Mar, start date 5 Mar. Expected: error 'End date must be on or after start date'; submit disabled."
+    },
+    {
+      "id": "T-8",
+      "criterion_id": "US-2.AC2",
+      "type": "negative",
+      "case": "Setup: request form showing the end-before-start error. Action: correct the end date to 5 Mar. Expected: error clears and submit becomes enabled."
+    },
+    {
+      "id": "T-9",
+      "criterion_id": "US-2.AC2",
+      "type": "edge",
+      "case": "Setup: request form. Action: choose the same day for start and end. Expected: accepted as a 1-day request, no error."
+    },
+    {
+      "id": "T-10",
+      "criterion_id": "US-3.AC1",
+      "type": "positive",
+      "case": "Setup: 12 days remaining. Action: submit a valid 3-day request. Expected: request created with status 'Pending' and shown in 'My requests'."
+    },
+    {
+      "id": "T-11",
+      "criterion_id": "US-3.AC1",
+      "type": "negative",
+      "case": "Setup: valid request form. Action: submit while the network drops. Expected: no duplicate is created on retry; the employee sees whether the request was saved."
+    },
+    {
+      "id": "T-12",
+      "criterion_id": "US-3.AC1",
+      "type": "edge",
+      "case": "Setup: 3 days remaining. Action: submit a request for exactly 3 working days. Expected: allowed; request created as 'Pending'."
+    },
+    {
+      "id": "T-13",
+      "criterion_id": "US-3.AC2",
+      "type": "positive",
+      "case": "Setup: 3 days remaining. Action: submit a request for 4 working days. Expected: blocked with 'Not enough vacation days'; no request created."
+    },
+    {
+      "id": "T-14",
+      "criterion_id": "US-3.AC2",
+      "type": "negative",
+      "case": "Setup: 3 days remaining. Action: bypass the form and post a 4-day request directly to the API. Expected: the server rejects it; no request created."
+    },
+    {
+      "id": "T-15",
+      "criterion_id": "US-3.AC2",
+      "type": "edge",
+      "case": "Setup: 0 days remaining. Action: submit a 1-day request. Expected: blocked with the balance message."
+    },
+    {
+      "id": "T-16",
+      "criterion_id": "US-4.AC1",
+      "type": "positive",
+      "case": "Setup: employee on the manager's team. Action: submit a request. Expected: the manager receives a notification that links to that request."
+    },
+    {
+      "id": "T-17",
+      "criterion_id": "US-4.AC1",
+      "type": "negative",
+      "case": "Setup: employee in a different team. Action: submit a request. Expected: this manager receives no notification."
+    },
+    {
+      "id": "T-18",
+      "criterion_id": "US-4.AC1",
+      "type": "edge",
+      "case": "Setup: employee whose manager record is missing. Action: submit a request. Expected: request is still created and the case is logged for HR; the employee is told approval may be delayed."
+    },
+    {
+      "id": "T-19",
+      "criterion_id": "US-5.AC1",
+      "type": "positive",
+      "case": "Setup: pending 3-day request, employee has 12 days. Action: manager approves. Expected: status 'Approved', employee notified, balance shows 9 days."
+    },
+    {
+      "id": "T-20",
+      "criterion_id": "US-5.AC1",
+      "type": "negative",
+      "case": "Setup: pending request from another team. Action: a different manager tries to approve via direct URL. Expected: access denied; status unchanged."
+    },
+    {
+      "id": "T-21",
+      "criterion_id": "US-5.AC1",
+      "type": "edge",
+      "case": "Setup: request already approved. Action: manager clicks approve again. Expected: no change; balance is not reduced twice."
+    },
+    {
+      "id": "T-22",
+      "criterion_id": "US-6.AC1",
+      "type": "positive",
+      "case": "Setup: pending 3-day request. Action: manager rejects with reason 'Team offsite that week'. Expected: status 'Rejected', employee notified with the reason, balance unchanged."
+    },
+    {
+      "id": "T-23",
+      "criterion_id": "US-6.AC1",
+      "type": "negative",
+      "case": "Setup: pending request from another team. Action: a different manager tries to reject via direct URL. Expected: access denied; status unchanged."
+    },
+    {
+      "id": "T-24",
+      "criterion_id": "US-6.AC1",
+      "type": "edge",
+      "case": "Setup: pending request. Action: manager rejects with no reason. Expected: allowed; employee is notified that the request was rejected without a reason."
+    },
+    {
+      "id": "T-25",
+      "criterion_id": "US-7.AC1",
+      "type": "positive",
+      "case": "Setup: 3-day request approved. Action: a teammate opens the team calendar. Expected: the employee is shown as away on all 3 dates."
+    },
+    {
+      "id": "T-26",
+      "criterion_id": "US-7.AC1",
+      "type": "negative",
+      "case": "Setup: one pending and one rejected request. Action: open the team calendar. Expected: neither appears."
+    },
+    {
+      "id": "T-27",
+      "criterion_id": "US-7.AC1",
+      "type": "edge",
+      "case": "Setup: approved request spanning a weekend. Action: open the team calendar. Expected: shown on the working days only, consistent with the day count."
+    },
+    {
+      "id": "T-28",
+      "criterion_id": "US-5.AC1",
+      "type": "edge",
+      "case": "Integration (US-5 → US-1 → US-3): employee with 3 days has a 3-day request approved, then opens the balance page and tries a 1-day request. Expected: balance shows 0 and the new request is blocked."
+    }
+  ],
+  "gap_report": [
+    {
+      "type": "inconsistency",
+      "severity": "medium",
+      "refs": [
+        "US-1.AC1",
+        "US-3.AC2",
+        "requirement"
+      ],
+      "detail": "Open question 1 is still unresolved: if pending requests don't reduce the balance, an employee could submit two requests that together exceed it. Add a rule (count pending days against the balance at submit time) or confirm the risk is acceptable."
+    },
+    {
+      "type": "untested_criterion",
+      "severity": "low",
+      "refs": [
+        "US-4.AC1"
+      ],
+      "detail": "US-4.AC1 says 'a notification' but the channel (in-app, email, both) is an open question; tests T-16 to T-18 will need updating once it's decided."
+    }
+  ],
+  "coverage": {
+    "criteria": 9,
+    "fully_covered": 9,
+    "missing": {},
+    "tests_with_unknown_criterion": []
+  },
+  "approvals": {
+    "gate1": true,
+    "gate2": true,
+    "gate3": true
+  },
+  "run": {
+    "models": {
+      "requirements_analyst": "claude-sonnet-5-5",
+      "story_writer": "claude-haiku-5-5",
+      "test_designer": "claude-sonnet-5-5",
+      "qa_verifier": "claude-opus-5-5"
+    },
+    "mock": true,
+    "loops": 1,
+    "max_loops": 2,
+    "calls": [
+      {
+        "agent": "requirements_analyst",
+        "model": "claude-sonnet-5-5",
+        "input_tokens": 331,
+        "output_tokens": 410,
+        "seconds": 0.0,
+        "attempts": 1,
+        "cost_usd": 0.004762
+      },
+      {
+        "agent": "story_writer",
+        "model": "claude-haiku-5-5",
+        "input_tokens": 656,
+        "output_tokens": 580,
+        "seconds": 0.0,
+        "attempts": 1,
+        "cost_usd": 0.0003556
+      },
+      {
+        "agent": "test_designer",
+        "model": "claude-sonnet-5-5",
+        "input_tokens": 925,
+        "output_tokens": 723,
+        "seconds": 0.0,
+        "attempts": 1,
+        "cost_usd": 0.00908
+      },
+      {
+        "agent": "qa_verifier",
+        "model": "claude-opus-5-5",
+        "input_tokens": 2137,
+        "output_tokens": 423,
+        "seconds": 0.0,
+        "attempts": 1,
+        "cost_usd": 0.017008
+      },
+      {
+        "agent": "story_writer",
+        "model": "claude-haiku-5-5",
+        "input_tokens": 813,
+        "output_tokens": 780,
+        "seconds": 0.0,
+        "attempts": 1,
+        "cost_usd": 0.0004713
+      },
+      {
+        "agent": "test_designer",
+        "model": "claude-sonnet-5-5",
+        "input_tokens": 1313,
+        "output_tokens": 1649,
+        "seconds": 0.0,
+        "attempts": 1,
+        "cost_usd": 0.019116
+      },
+      {
+        "agent": "qa_verifier",
+        "model": "claude-opus-5-5",
+        "input_tokens": 3184,
+        "output_tokens": 168,
+        "seconds": 0.0,
+        "attempts": 1,
+        "cost_usd": 0.016096
+      }
+    ],
+    "total_cost_usd": 0.066889,
+    "all_premium_cost_usd": 0.132096
+  }
+}

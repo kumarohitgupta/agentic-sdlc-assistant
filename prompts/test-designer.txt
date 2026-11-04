@@ -7,13 +7,20 @@ APPROVED STORIES (JSON):
 {{stories}}
 """
 
+FEEDBACK TO ADDRESS (the QA Verifier's gap report on a previous test set; "(none)" means this is the first draft):
+"""
+{{feedback}}
+"""
+
 Produce a JSON array of test cases. Each object has:
 - "id": short id like "T-1".
-- "criterion_id": which acceptance criterion it tests (reference the story id + criterion).
+- "criterion_id": the exact acceptance criterion id it tests, like "US-1.AC1".
 - "type": one of "positive", "negative", "edge".
 - "case": a clear description of the test — setup, action, expected result.
 
 Rules:
 - Every acceptance criterion must have at least one positive, one negative, and one edge test.
 - Edge cases should probe boundaries, empty/invalid input, and permission/state issues where relevant.
-- Output ONLY the JSON array, no preamble.
+- Where stories depend on each other (one story's outcome changes another's state), include a test that checks the hand-off.
+- If feedback is given, fix every point it raises.
+- Output ONLY the JSON array, no preamble and no code fences.

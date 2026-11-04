@@ -1,0 +1,80 @@
+[
+  {
+    "id": "T-1",
+    "criterion_id": "US-1.AC1",
+    "type": "positive",
+    "case": "Setup: employee with 12 days remaining. Action: open the time-off page. Expected: '12 days remaining' is shown."
+  },
+  {
+    "id": "T-2",
+    "criterion_id": "US-2.AC1",
+    "type": "positive",
+    "case": "Setup: request form. Action: choose Mon 2 Mar to Fri 6 Mar. Expected: '5 working days' is shown."
+  },
+  {
+    "id": "T-3",
+    "criterion_id": "US-2.AC1",
+    "type": "negative",
+    "case": "Setup: request form. Action: choose a range that starts in the past. Expected: an error says past dates can't be requested."
+  },
+  {
+    "id": "T-4",
+    "criterion_id": "US-2.AC1",
+    "type": "edge",
+    "case": "Setup: request form. Action: choose Fri 6 Mar to Mon 9 Mar (spans a weekend). Expected: '2 working days' is shown."
+  },
+  {
+    "id": "T-5",
+    "criterion_id": "US-2.AC2",
+    "type": "positive",
+    "case": "Setup: request form. Action: choose end date 1 Mar, start date 5 Mar. Expected: error 'End date must be on or after start date'; submit disabled."
+  },
+  {
+    "id": "T-6",
+    "criterion_id": "US-2.AC2",
+    "type": "edge",
+    "case": "Setup: request form. Action: choose the same day for start and end. Expected: accepted as a 1-day request, no error."
+  },
+  {
+    "id": "T-7",
+    "criterion_id": "US-3.AC1",
+    "type": "positive",
+    "case": "Setup: 12 days remaining. Action: submit a valid 3-day request. Expected: request created with status 'Pending' and shown in 'My requests'."
+  },
+  {
+    "id": "T-8",
+    "criterion_id": "US-3.AC1",
+    "type": "edge",
+    "case": "Setup: 3 days remaining. Action: submit a request for exactly 3 working days. Expected: allowed; request created as 'Pending'."
+  },
+  {
+    "id": "T-9",
+    "criterion_id": "US-3.AC2",
+    "type": "positive",
+    "case": "Setup: 3 days remaining. Action: submit a request for 4 working days. Expected: blocked with 'Not enough vacation days'; no request created."
+  },
+  {
+    "id": "T-10",
+    "criterion_id": "US-3.AC2",
+    "type": "negative",
+    "case": "Setup: 3 days remaining. Action: bypass the form and post a 4-day request directly to the API. Expected: the server rejects it; no request created."
+  },
+  {
+    "id": "T-11",
+    "criterion_id": "US-5.AC1",
+    "type": "positive",
+    "case": "Setup: pending 3-day request, employee has 12 days. Action: manager approves. Expected: status 'Approved', employee notified, balance shows 9 days."
+  },
+  {
+    "id": "T-12",
+    "criterion_id": "US-6.AC1",
+    "type": "positive",
+    "case": "Setup: 3-day request approved. Action: a teammate opens the team calendar. Expected: the employee is shown as away on all 3 dates."
+  },
+  {
+    "id": "T-13",
+    "criterion_id": "US-6.AC1",
+    "type": "negative",
+    "case": "Setup: one pending and one rejected request. Action: open the team calendar. Expected: neither appears."
+  }
+]

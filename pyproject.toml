@@ -1,0 +1,28 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "agentic-sdlc-assistant"
+version = "1.0.0"
+description = "Multi-agent pipeline that turns a feature request into requirements, user stories, tests and a QA gap report, with human approval gates."
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "Rohit Kumar Gupta" }]
+requires-python = ">=3.10"
+dependencies = ["anthropic>=0.40"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+sdlc-assistant = "sdlc_assistant.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["sdlc_assistant"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"prompts" = "sdlc_assistant/prompts"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

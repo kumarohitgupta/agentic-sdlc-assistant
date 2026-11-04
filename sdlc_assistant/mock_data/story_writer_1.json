@@ -1,0 +1,22 @@
+[
+  {"id": "US-1", "story": "As an employee, I want to see my remaining vacation balance, so that I know how much time off I can request.",
+   "acceptance_criteria": [
+     {"id": "US-1.AC1", "criterion": "Given I am logged in and have 12 vacation days remaining, When I open the time-off page, Then I see '12 days remaining'"}]},
+  {"id": "US-2", "story": "As an employee, I want to pick a start and end date, so that I can say exactly when I'll be away.",
+   "acceptance_criteria": [
+     {"id": "US-2.AC1", "criterion": "Given I am on the request form, When I choose an end date on or after the start date, Then the number of working days requested is shown"},
+     {"id": "US-2.AC2", "criterion": "Given I am on the request form, When I choose an end date before the start date, Then I see an error and cannot submit"}]},
+  {"id": "US-3", "story": "As an employee, I want to submit my request, so that my manager can review it.",
+   "acceptance_criteria": [
+     {"id": "US-3.AC1", "criterion": "Given valid dates within my remaining balance, When I submit, Then a request is created with status 'Pending'"},
+     {"id": "US-3.AC2", "criterion": "Given the requested working days exceed my remaining balance, When I submit, Then the submission is blocked with a message and no request is created"}]},
+  {"id": "US-4", "story": "As a manager, I want to be notified of a new request, so that I can review it promptly.",
+   "acceptance_criteria": [
+     {"id": "US-4.AC1", "criterion": "Given an employee on my team submits a request, When it is created, Then I receive a notification linking to the request"}]},
+  {"id": "US-5", "story": "As a manager, I want to approve a pending request, so that my team member can take the time off.",
+   "acceptance_criteria": [
+     {"id": "US-5.AC1", "criterion": "Given a pending request from my team, When I approve it, Then its status becomes 'Approved', the employee is notified, and their balance is reduced by the requested days"}]},
+  {"id": "US-6", "story": "As a team member, I want approved time off on the team calendar, so that we can plan around absences.",
+   "acceptance_criteria": [
+     {"id": "US-6.AC1", "criterion": "Given a request is approved, When anyone on the team opens the team calendar, Then the employee is shown as away on each requested date"}]}
+]

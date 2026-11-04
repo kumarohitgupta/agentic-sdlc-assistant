@@ -1,0 +1,1 @@
+Employees should be able to request time off. They pick the dates, see how many vacation days they have left, and submit the request. Their manager gets notified and can approve or reject it. Approved time off should show up on the team calendar.
