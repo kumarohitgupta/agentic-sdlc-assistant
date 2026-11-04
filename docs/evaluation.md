@@ -48,17 +48,42 @@ sdlc-assistant eval --only EC-4,EC-5 --model-qa-verifier claude-haiku-5-5
 
 ## Results
 
-| Case | Req. quality | Story compl. | Test cov. | Gap detection | Cost | Notes |
-| --- | --- | --- | --- | --- | --- | --- |
-| EC-1 | | | | — | | |
-| EC-2 | | | | — | | |
-| EC-3 | | | | — | | |
-| EC-4 (planted gap) | | | | | | |
-| EC-5 (planted gap) | | | | | | |
-| EC-6 | | | | — | | |
-| **Avg** | | | | | | |
+### Live run 1 — 3 Nov 2026
 
-*Not yet filled in: run `sdlc-assistant eval` and score each spec.*
+Five of the six cases, run with `sdlc-assistant eval` on the default routing (Sonnet 5.5 → Haiku 5.5 → Sonnet 5.5 → Opus 5.5), gates auto-approved. EC-6 is still to run.
+
+| Case | Open questions | Stories | Criteria with +/−/edge tests | Tests | QA loops | High gaps left | Cost | vs. all-Opus |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| EC-1 Password reset | 12 | 7 | 25/25 | 80 | 0 | 0 | $0.32 | −40% |
+| EC-2 CSV export | 11 | 4 | 15/15 | 57 | 1 (tests) | 0 | $0.50 | −35% |
+| EC-3 Notifications | 13 | 5 | 20/20 | 69 | 0 | 0 | $0.24 | −41% |
+| EC-4 Bulk upload *(planted gap)* | 11 | 5 | 30/30 | 126 | 2 (stories) | 0 | $1.37 | −49% |
+| EC-5 Two-factor login *(planted gap)* | 12 | 6 | 19/19 | 59 | 0 | 0 | $0.27 | −41% |
+| **Total** | | | **109/109** | **391** | | | **$2.70** | **−44%** |
+
+"vs. all-Opus" is the same token counts priced as if every step ran on Opus 5.5.
+
+**Planted gaps.** The QA Verifier flagged both on its first pass:
+- **EC-4 (row validation rules):** flagged on the first pass, which reported two high-severity gaps. The feedback loop sent the work back to the Story Writer twice, and the final stories cover row validation.
+- **EC-5 (lost-device recovery):** flagged at medium. The QA Verifier pointed out that a user who loses their phone can neither log in nor turn 2FA off. The Requirements Analyst had also listed recovery as an open question. Because recovery was not in scope, no loop ran, and the final stories don't cover it. In normal use a reviewer answers that question at Gate 1; in eval mode nobody does. This is deliberate: the system flags missing scope for a human rather than adding it on its own.
+
+**Feedback loop.** Both routes fired: EC-2 had a test-only gap and re-ran just the Test Designer, while EC-4 had scope gaps and re-ran the Story Writer, with the new stories passing Gate 2 again.
+
+**Cost.** Opus is one step of four but about half of each run's cost, which is the intended concentration. Most of the rest is the Test Designer's long output. EC-4 includes about $0.30 of retries from the original output caps, since raised.
+
+**Not yet measured:** the human rubric scores below, EC-6, and the same cases with a cheaper QA Verifier (`--model-qa-verifier claude-haiku-5-5`), which is what would show whether the premium tier earns its cost.
+
+### Rubric scores (human review)
+
+| Case | Req. quality | Story compl. | Test cov. | Gap detection | Notes |
+| --- | --- | --- | --- | --- | --- |
+| EC-1 | | | | — | |
+| EC-2 | | | | — | |
+| EC-3 | | | | — | |
+| EC-4 (planted gap) | | | | | |
+| EC-5 (planted gap) | | | | | Flagged at medium; not auto-fixed (see above) |
+| EC-6 | | | | — | |
+| **Avg** | | | | | |
 
 ## What to do with the results
 

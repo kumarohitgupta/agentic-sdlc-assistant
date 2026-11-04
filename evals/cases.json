@@ -20,7 +20,13 @@
     "request": "HR wants to upload new employees in bulk from a spreadsheet. Show them which rows succeeded and which failed.",
     "planted_gap": {
       "description": "What makes a row fail (validation rules) is implied but not stated.",
-      "keywords": ["validat", "required field", "invalid row", "duplicate", "malformed"]
+      "keywords": [
+        "validat",
+        "required field",
+        "invalid row",
+        "duplicate",
+        "malformed"
+      ]
     }
   },
   {
@@ -29,7 +35,15 @@
     "request": "Add optional two-factor authentication at login using an authenticator app. Users can turn it on in settings.",
     "planted_gap": {
       "description": "Recovery when the device is lost (recovery codes, lockout) is not mentioned.",
-      "keywords": ["recovery", "lost device", "lost phone", "backup code", "lockout", "locked out"]
+      "keywords": [
+        "recovery",
+        "lost device",
+        "lost phone",
+        "lose their device",
+        "loses their device",
+        "backup code",
+        "lost their device"
+      ]
     }
   },
   {

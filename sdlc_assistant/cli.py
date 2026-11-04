@@ -114,27 +114,43 @@ def cmd_eval(args) -> int:
         }
         planted = case.get("planted_gap")
         if planted:
-            first_qa = json.dumps(pipe.first_gap_report or [])
-            row["planted_gap_flagged_by_qa"] = _contains(first_qa, planted["keywords"])
-            row["planted_gap_covered_in_final_stories"] = _contains(json.dumps(spec["stories"]), planted["keywords"])
+            kw = planted["keywords"]
+            matches = [g for g in (pipe.first_gap_report or []) if _contains(json.dumps(g), kw)]
+            order = {"high": 0, "medium": 1, "low": 2}
+            row["planted_gap_flagged_by_qa"] = bool(matches)
+            row["planted_gap_qa_severity"] = min((g["severity"] for g in matches), key=order.get) if matches else None
+            row["planted_gap_raised_by_analyst"] = bool(spec["requirement"]) and _contains(
+                json.dumps(spec["requirement"]["open_questions"] + spec["requirement"]["in_scope"]), kw)
+            row["planted_gap_covered_in_final_stories"] = _contains(json.dumps(spec["stories"]), kw)
         rows.append(row)
 
     out_root.mkdir(parents=True, exist_ok=True)
     (out_root / "results.json").write_text(json.dumps(rows, indent=2) + "\n", encoding="utf-8")
     lines = [
-        "| Case | Open Qs | Stories | Criteria fully tested | Tests | High gaps (final) | Loops | Planted gap flagged by QA | Planted gap covered at end | Cost |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+        "| Case | Open Qs | Stories | Criteria fully tested | Tests | High gaps (final) | Loops "
+        "| Planted gap: raised by Analyst | Planted gap: flagged by QA (severity) | Planted gap: in final stories | Cost |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
+    yn = {True: "yes", False: "no"}
     for r in rows:
-        flagged = {True: "yes", False: "no"}.get(r.get("planted_gap_flagged_by_qa"), "—")
-        covered = {True: "yes", False: "no"}.get(r.get("planted_gap_covered_in_final_stories"), "—")
+        raised = yn.get(r.get("planted_gap_raised_by_analyst"), "—")
+        flagged = yn.get(r.get("planted_gap_flagged_by_qa"), "—")
+        if r.get("planted_gap_qa_severity"):
+            flagged += f" ({r['planted_gap_qa_severity']})"
+        covered = yn.get(r.get("planted_gap_covered_in_final_stories"), "—")
         cost = f"${r['cost_usd']:.3f}" if r["cost_usd"] is not None else "n/a"
         lines.append(f"| {r['case']} | {r['open_questions']} | {r['stories']} | {r['fully_covered']}/{r['criteria']} "
-                     f"| {r['tests']} | {r['gaps_high']} | {r['loops']} | {flagged} | {covered} | {cost} |")
+                     f"| {r['tests']} | {r['gaps_high']} | {r['loops']} | {raised} | {flagged} | {covered} | {cost} |")
     planted_rows = [r for r in rows if "planted_gap_flagged_by_qa" in r]
     if planted_rows:
-        rate = sum(r["planted_gap_flagged_by_qa"] for r in planted_rows) / len(planted_rows)
-        lines.append(f"\nPlanted-gap detection rate (flagged by QA on first pass): {rate:.0%}")
+        n = len(planted_rows)
+        flagged_n = sum(r["planted_gap_flagged_by_qa"] for r in planted_rows)
+        high_n = sum(r["planted_gap_qa_severity"] == "high" for r in planted_rows)
+        fixed_n = sum(r["planted_gap_covered_in_final_stories"] for r in planted_rows)
+        lines.append(f"\nPlanted gaps flagged by QA on first pass: {flagged_n}/{n} "
+                     f"({high_n} at high severity, which triggers the automatic loop). "
+                     f"Covered in the final stories: {fixed_n}/{n}. "
+                     "Gates were auto-approved, so open questions went unanswered.")
     table = "\n".join(lines)
     (out_root / "results.md").write_text(table + "\n", encoding="utf-8")
     print("\n" + table + f"\n\nSaved to {out_root}/results.md — keyword matching is a first pass; "
