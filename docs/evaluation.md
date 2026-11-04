@@ -50,7 +50,7 @@ sdlc-assistant eval --only EC-4,EC-5 --model-qa-verifier claude-haiku-5-5
 
 ### Live run 1 — 3 Nov 2026
 
-Five of the six cases, run with `sdlc-assistant eval` on the default routing (Sonnet 5.5 → Haiku 5.5 → Sonnet 5.5 → Opus 5.5), gates auto-approved. EC-6 is still to run.
+All six cases, run with `sdlc-assistant eval` on the default routing (Sonnet 5.5 → Haiku 5.5 → Sonnet 5.5 → Opus 5.5), gates auto-approved.
 
 | Case | Open questions | Stories | Criteria with +/−/edge tests | Tests | QA loops | High gaps left | Cost | vs. all-Opus |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -59,7 +59,8 @@ Five of the six cases, run with `sdlc-assistant eval` on the default routing (So
 | EC-3 Notifications | 13 | 5 | 20/20 | 69 | 0 | 0 | $0.24 | −41% |
 | EC-4 Bulk upload *(planted gap)* | 11 | 5 | 30/30 | 126 | 2 (stories) | 0 | $1.37 | −49% |
 | EC-5 Two-factor login *(planted gap)* | 12 | 6 | 19/19 | 59 | 0 | 0 | $0.27 | −41% |
-| **Total** | | | **109/109** | **391** | | | **$2.70** | **−44%** |
+| EC-6 Document comments | 12 | 5 | 20/20 | 94 | 0 | 0 | $0.29 | −40% |
+| **Total** | | | **129/129** | **485** | | | **$2.98** | **−44%** |
 
 "vs. all-Opus" is the same token counts priced as if every step ran on Opus 5.5.
 
@@ -71,7 +72,7 @@ Five of the six cases, run with `sdlc-assistant eval` on the default routing (So
 
 **Cost.** Opus is one step of four but about half of each run's cost, which is the intended concentration. Most of the rest is the Test Designer's long output. EC-4 includes about $0.30 of retries from the original output caps, since raised.
 
-**Not yet measured:** the human rubric scores below, EC-6, and the same cases with a cheaper QA Verifier (`--model-qa-verifier claude-haiku-5-5`), which is what would show whether the premium tier earns its cost.
+**Not yet measured:** the human rubric scores below, and the same cases with a cheaper QA Verifier (`--model-qa-verifier claude-haiku-5-5`), which is what would show whether the premium tier earns its cost.
 
 ### Rubric scores (human review)
 

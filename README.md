@@ -90,11 +90,11 @@ See a complete example: [`examples/sample-output-delivery-spec.md`](examples/sam
 
 ## Results so far
 
-First live evaluation (5 of 6 cases, [details](docs/evaluation.md#results)):
+First live evaluation (all 6 cases, [details](docs/evaluation.md#results)):
 
 - **Both planted gaps flagged** by the QA Verifier on its first pass. One was fixed automatically through the feedback loop. The other was out of scope, so it was flagged for a human instead.
-- **109 of 109** acceptance criteria ended with positive, negative and edge tests.
-- **$0.54 per feature** on average, **44% less** than the same run with Opus on every step.
+- **129 of 129** acceptance criteria ended with positive, negative and edge tests.
+- **$0.50 per feature** on average, **44% less** than the same run with Opus on every step.
 
 ## Architecture
 
